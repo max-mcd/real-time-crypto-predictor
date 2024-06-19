@@ -1,10 +1,11 @@
-from typing import List, Dict
-from websocket import create_connection
 import json
+from typing import Dict, List
+
 from loguru import logger
+from websocket import create_connection
 
-class KrakenWebTradeAPI:
 
+class KrakenWebsocketTradeAPI:
     # https://docs.kraken.com/api/docs/websocket-v2/ohlc
     URL = 'wss://ws.kraken.com/v2'
 
@@ -25,20 +26,15 @@ class KrakenWebTradeAPI:
 
         message = {
             'method': 'subscribe',
-            'params': {
-                'channel': 'trade',
-                'symbol': [product_id],
-                'snapshot': False
-            }
+            'params': {'channel': 'trade', 'symbol': [product_id], 'snapshot': False},
         }
 
-        self._ws.send(json.dumps(message))   
+        self._ws.send(json.dumps(message))
         logger.info('Subscribed to trades')
 
         # ignore the first two messages since they only contain no trade data, only subscription confirmation
         _ = self._ws.recv()
         _ = self._ws.recv()
-
 
     def get_trades(self) -> List[Dict]:
         """
@@ -49,7 +45,7 @@ class KrakenWebTradeAPI:
         # if message contains '{'channel':'heartbeat'}' - ignore it
         if 'heartbeat' in message:
             return []
-        
+
         # Parse the trade message
         message = json.loads(message)
         logger.info(f'Received message: {message}')
@@ -57,11 +53,13 @@ class KrakenWebTradeAPI:
         # Parse all trades in the message and return them as a list of dictionaries
         trades = []
         for trade in message['data']:
-            trades.append({
+            trades.append(
+                {
                     'product_id': self.product_id,
                     'price': trade['price'],
                     'volume': trade['qty'],
                     'timestamp': trade['timestamp'],
-            })
+                }
+            )
 
         return trades

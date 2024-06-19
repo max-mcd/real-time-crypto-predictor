@@ -1,9 +1,10 @@
-from typing import List, Dict
+from typing import Dict, List
 
 from loguru import logger
 from quixstreams import Application
 
-from src.kraken_api import KrakenWebTradeAPI
+from src.kraken_api import KrakenWebsocketTradeAPI
+
 
 def produce_trades(
     kafka_broker_address: str,
@@ -26,33 +27,25 @@ def produce_trades(
 
     # Create an instance of the Kraken API
     logger.info('Creating the Kraken API to fetch trade data')
-    kraken_api = KrakenWebTradeAPI(product_id='BTC/USD')    
+    kraken_api = KrakenWebsocketTradeAPI(product_id='BTC/USD')
 
     # Create a Producer instance
     with app.get_producer() as producer:
-
         while True:
             # get_trades() is a method that returns a list of trades from the Kraken API
-            
+
             trades: List[Dict] = kraken_api.get_trades()
 
             # Iterate over the trades and send them to the Kafka topic
             for trade in trades:
-                # Serialize an event using the defined Topic 
+                # Serialize an event using the defined Topic
                 message = topic.serialize(key=trade['product_id'], value=trade)
 
                 # Produce a message into the Kafka topic
-                producer.produce(
-                    topic=topic.name,
-                    value=message.value,
-                    key=message.key
-                )
+                producer.produce(topic=topic.name, value=message.value, key=message.key)
 
                 logger.info(f'Sent trade: {trade}')
 
-if __name__ == '__main__':
 
-    produce_trades(
-        kafka_broker_address='localhost:19092',
-        kafka_topic_name='trade'
-    )
+if __name__ == '__main__':
+    produce_trades(kafka_broker_address='redpanda-0:9092', kafka_topic_name='trade')
