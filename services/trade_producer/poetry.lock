@@ -267,6 +267,20 @@ files = [
 ]
 
 [[package]]
+name = "python-dotenv"
+version = "1.0.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "quixstreams"
 version = "2.5.1"
 description = "Python library for building stream processing applications with Apache Kafka"
@@ -436,4 +450,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "23c35a8ea9ae695124c9ae4ad8ae5cb63b400b69b9a7ebad031eed167ad7cd01"
+content-hash = "17dbb029701795774c1a447f1fed589eeb824f8f0ff055ce063b3fc1ad42a93d"
