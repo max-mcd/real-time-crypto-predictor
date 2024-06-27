@@ -1,0 +1,37 @@
+# write a docker compose with 3 services
+# - services/trade_producer.py
+# - services/trade_to_ohlc.py
+# - services/kafka_to_feature_store.py
+# Ensure that the services are connected to the redpanda broker
+
+version: '3.7'
+name: feature_pipeline
+networks:
+  redpanda_network:
+    name: redpanda_network
+    driver: bridge
+services:
+  trade_producer:
+    build: 
+      context: ../services/trade_producer
+    networks:
+      - redpanda_network
+    environment:
+      KAFKA_BROKER_ADDRESS: redpanda-0:9092
+
+  trade_to_ohlc:
+    build: ../services/trade_to_ohlc
+    networks:
+      - redpanda_network
+    environment:
+      KAFKA_BROKER_ADDRESS: redpanda-0:9092
+      OHLC_WINDOW_SECONDS: 60
+
+  kafka_to_feature_store:
+    build: ../services/kafka_to_feature_store
+    networks:
+      - redpanda_network
+    environment:
+      KAFKA_BROKER_ADDRESS: redpanda-0:9092
+    env_file:
+      - ../services/kafka_to_feature_store/.env
