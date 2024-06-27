@@ -10,7 +10,7 @@ def push_data_to_feature_store(
     data: dict,
 ) -> None:
     """
-    Write the given 'data' to the feature group specified by a name and a version.
+    Write the given "data" to the feature group specified by a name and a version.
 
     Args:
         feature_group_name (str): Name of the feature group to write data to
@@ -34,9 +34,9 @@ def push_data_to_feature_store(
     ohlc_feature_group = fs.get_or_create_feature_group(
         name=config.feature_group_name,
         version=config.feature_group_version,
-        description='OHLC data from Kraken',
-        primary_key=['product_id', 'timestamp'],
-        event_time='timestamp',
+        description="OHLC data from Kraken",
+        primary_key=["product_id", "timestamp"],
+        event_time="timestamp",
         online_enabled=True,  # Enable online feature serving
     )
 
@@ -44,4 +44,6 @@ def push_data_to_feature_store(
     data = pd.DataFrame([data])
 
     # Insert data into feature group
-    ohlc_feature_group.insert(data)
+    # Set start_offline_materialization to avoid starting the materialization 
+    # job to write data to the offline storage
+    ohlc_feature_group.insert(data, write_options={"start_offline_materialization": False})

@@ -1,5 +1,4 @@
 import json
-
 from loguru import logger
 from quixstreams import Application
 
@@ -29,8 +28,9 @@ def kafka_to_feature_store(
 
     app = Application(
         broker_address=kafka_broker_address,
-        consumer_group='kafka_to_feature_store',
-        # auto_offset_reset="earliest", # process all messages from the input topic when this service starts
+        consumer_group="kafka_to_feature_store",
+        # process all messages from the input topic when this service starts
+        # auto_offset_reset="earliest", 
     )
 
     # Create a consumer and start a polling loop
@@ -44,13 +44,13 @@ def kafka_to_feature_store(
                 continue
 
             elif msg.error():
-                logger.error(f'Consumer error: {msg.error()}')
+                logger.error(f"Consumer error: {msg.error()}")
                 continue
 
             else:
                 # Decode the binary message to a string, then parse it as JSON
-                ohlc = json.loads(msg.value().decode('utf-8'))
-                logger.info(f'Received message: {msg.value()}')
+                ohlc = json.loads(msg.value().decode("utf-8"))
+                #logger.info(f"Received message: {msg.value()}")
 
                 # Write the message to the feature store
                 push_data_to_feature_store(
@@ -59,13 +59,13 @@ def kafka_to_feature_store(
                     data=ohlc,
                 )
 
-            breakpoint()
+            # breakpoint()
 
             # Store the offset of the message in Kafka
-            consumer.store_offsets(msg)
+            consumer.store_offsets(message=msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     kafka_to_feature_store(
         kafka_broker_address=config.kafka_broker_address,
         kafka_topic=config.kafka_topic,
