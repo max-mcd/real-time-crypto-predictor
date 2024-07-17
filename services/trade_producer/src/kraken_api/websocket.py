@@ -9,8 +9,12 @@ class KrakenWebsocketTradeAPI:
     # https://docs.kraken.com/api/docs/websocket-v2/ohlc
     URL = 'wss://ws.kraken.com/v2'
 
-    def __init__(self, product_ids: List[str]):
+    def __init__(
+            self, 
+            product_ids: List[str]
+    ):
         self.product_ids = product_ids
+
         # Create a connection to the Kraken Websocket API
         self._ws = create_connection(self.URL)
         logger.info('Connected to Kraken Websocket API')
@@ -58,21 +62,20 @@ class KrakenWebsocketTradeAPI:
         logger.info(f'Received message: {message}')
 
         # Parse all trades in the message and return them as a list of dictionaries
-        trades = []
-        for trade in message['data']:
-            trades.append(
-                {
-                    'product_id': trade['symbol'],
-                    'price': trade['price'],
-                    'volume': trade['qty'],
-                    'timestamp': trade['timestamp'],
-                }
-            )
+        trades = [
+            {
+                'product_id': trade['symbol'],
+                'price': trade['price'],
+                'volume': trade['qty'],
+                'timestamp': trade['timestamp'],
+            } for trade in message['data']
+        ]           
 
+        breakpoint()
         return trades
 
     def is_done(self) -> bool:
         """
-        Check if all trades have been fetched. The Websocket API is never done.
+        The Websocket API is never done, so we keep fetching trades indefinitely.
         """
         return False

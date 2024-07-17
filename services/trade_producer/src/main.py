@@ -36,20 +36,25 @@ def produce_trades(
     # The topic where we will save the trades
     topic = app.topic(name=kafka_topic_name, value_serializer='json')
 
+    logger.info(f'Creating the Kraken API to fetch data for {product_ids}')
+
+    # Create the appropriate instance of the Kraken API
     if live_or_historical == 'live':
-        # Create an instance of the Kraken WebSocket API
         logger.info('Creating the Kraken Websocket API to fetch live trade data')
         kraken_api = KrakenWebsocketTradeAPI(product_ids=product_ids)
     else:
-        # Create an instance of the Kraken REST API
         logger.info('Creating the Kraken REST API to fetch historical trade data')
         # Get current timestamp in milliseconds
         to_ms = int(time.time() * 1000)
         from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
+
         kraken_api = KrakenRestAPI(
             product_ids=product_ids,
             from_ms=from_ms,
+            to_ms=to_ms,
         )
+
+        logger.info('Creating the producer...')
 
     # Create a Producer instance
     with app.get_producer() as producer:
@@ -79,6 +84,7 @@ if __name__ == '__main__':
             kafka_broker_address=config.kafka_broker_address,
             kafka_topic_name=config.kafka_topic_name,
             product_ids=config.product_ids,
+
             # Parameters required to run the trade producer for historical data
             live_or_historical=config.live_or_historical,
             last_n_days=config.last_n_days,
